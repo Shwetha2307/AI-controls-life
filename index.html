@@ -1,218 +1,1302 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Controls Your Life</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AI CONTROLS YOUR LIFE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Space+Grotesk:wght@300;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #ff2d55;
+  --cyan: #00f5ff;
+  --yellow: #ffd60a;
+  --green: #39ff14;
+  --dark: #030308;
+  --mid: #0a0a1a;
+}
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-    }
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-    body {
-      overflow-x: hidden;
-      color: white;
-      background: linear-gradient(270deg, #000, #0f2027, #2c5364);
-      background-size: 600% 600%;
-      animation: bgMove 10s ease infinite;
-    }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
-    /* SCENE */
-    .scene {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 20px;
-      position: relative;
-    }
+body {
+  background: var(--dark);
+  color: #fff;
+  font-family: 'Share Tech Mono', monospace;
+  overflow-x: hidden;
+  cursor: none;
+}
 
-    /* TEXT */
-    .text {
-      font-size: 2rem;
-      text-shadow: 0 0 10px #00f5ff, 0 0 20px #00f5ff;
-      line-height: 1.5;
-    }
+/* CUSTOM CURSOR */
+#cursor {
+  width: 20px; height: 20px;
+  border: 2px solid var(--cyan);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transition: transform 0.1s, border-color 0.2s;
+  mix-blend-mode: difference;
+}
+#cursor-dot {
+  width: 4px; height: 4px;
+  background: var(--cyan);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+}
 
-    /* BUTTONS */
-    .choice button {
-      display: block;
-      margin: 10px;
-      padding: 14px 25px;
-      border-radius: 30px;
-      border: 1px solid #00f5ff;
-      background: rgba(255,255,255,0.1);
-      color: white;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      transition: 0.3s;
-    }
+/* NOISE OVERLAY */
+body::before {
+  content:'';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.35;
+}
 
-    .choice button:hover {
-      background: #00f5ff;
-      color: black;
-      box-shadow: 0 0 20px #00f5ff;
-    }
+/* SCANLINES */
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+  pointer-events:none;
+  z-index:9997;
+}
 
-    /* BACKGROUND ANIMATION */
-    @keyframes bgMove {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+/* CANVAS */
+#particles { position:fixed; inset:0; z-index:0; pointer-events:none; }
 
-    /* GLITCH */
-    body.glitch {
-      animation: glitch 0.2s;
-    }
+/* ========= SECTION SYSTEM ========= */
+.panel {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+  position: relative;
+  z-index: 10;
+}
 
-    @keyframes glitch {
-      0% { transform: translate(2px, -2px); }
-      50% { transform: translate(-2px, 2px); }
-      100% { transform: translate(0, 0); }
-    }
+/* ========= SCENE 1 - TAKEOVER ========= */
+#s1 {
+  background: radial-gradient(ellipse at center, #0a0020 0%, var(--dark) 70%);
+}
 
-    /* SCROLL INDICATOR */
-    .scroll-indicator {
-      position: absolute;
-      bottom: 30px;
-      font-size: 1rem;
-      opacity: 0.7;
-      animation: bounce 1.5s infinite;
-    }
+.glitch-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3rem, 13vw, 10rem);
+  letter-spacing: 0.05em;
+  line-height: 0.9;
+  color: #fff;
+  position: relative;
+  animation: glitch-main 3s infinite;
+}
+.glitch-title::before, .glitch-title::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  opacity: 0.8;
+}
+.glitch-title::before {
+  color: var(--red);
+  animation: glitch-a 2.5s infinite;
+  clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+}
+.glitch-title::after {
+  color: var(--cyan);
+  animation: glitch-b 3s infinite;
+  clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+}
 
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(10px); }
-    }
+@keyframes glitch-main {
+  0%,90%,100%{ transform:none; }
+  91%{ transform: skewX(-3deg) translateX(3px); }
+  93%{ transform: skewX(2deg) translateX(-3px); }
+  95%{ transform: none; }
+}
+@keyframes glitch-a {
+  0%,85%,100%{ transform:none; opacity:0; }
+  86%{ transform: translateX(-5px); opacity:0.9; }
+  88%{ transform: translateX(5px); opacity:0; }
+}
+@keyframes glitch-b {
+  0%,80%,100%{ transform:none; opacity:0; }
+  81%{ transform: translateX(4px); opacity:0.9; }
+  83%{ transform: translateX(-4px); opacity:0; }
+}
 
-  </style>
+.s1-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(0.7rem, 2.5vw, 1.1rem);
+  color: var(--cyan);
+  margin-top: 16px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  animation: pulse-cyan 2s ease-in-out infinite;
+}
+@keyframes pulse-cyan {
+  0%,100%{ opacity:1; text-shadow: 0 0 10px var(--cyan); }
+  50%{ opacity:0.4; text-shadow: none; }
+}
+
+.countdown-ring {
+  margin: 40px auto 20px;
+  width: 100px; height: 100px;
+  position: relative;
+}
+.countdown-ring svg { transform: rotate(-90deg); }
+.countdown-ring circle.track { fill:none; stroke:#1a1a2e; stroke-width:6; }
+.countdown-ring circle.prog {
+  fill:none; stroke: var(--red); stroke-width:6;
+  stroke-dasharray: 283;
+  stroke-dashoffset: 0;
+  animation: drain 5s linear forwards;
+  stroke-linecap: round;
+}
+@keyframes drain { to { stroke-dashoffset: 283; } }
+.countdown-num {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Bebas Neue',sans-serif; font-size:2.5rem;
+  color: var(--red);
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 30px;
+  display: flex; flex-direction:column; align-items:center; gap:8px;
+  font-size: 0.75rem; letter-spacing:0.2em; opacity:0.6;
+  animation: bob 1.8s ease-in-out infinite;
+}
+.scroll-hint::after {
+  content: '';
+  display: block;
+  width: 1px; height: 50px;
+  background: linear-gradient(to bottom, var(--cyan), transparent);
+  animation: grow 1.8s ease-in-out infinite;
+}
+@keyframes bob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(8px);} }
+@keyframes grow { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+
+/* ========= SCENE 2 - LOADING ========= */
+#s2 { background: var(--dark); }
+
+.ai-loading {
+  width: min(600px, 90vw);
+  text-align: left;
+}
+.ai-loading .label {
+  font-size:0.7rem; color:var(--green); letter-spacing:0.3em; margin-bottom:24px;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 50%{opacity:0;} }
+
+.log-line {
+  font-size: clamp(0.75rem, 2.5vw, 1rem);
+  color: #fff;
+  margin-bottom: 12px;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: all 0.4s ease;
+  padding: 8px 12px;
+  border-left: 2px solid transparent;
+}
+.log-line.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.log-line.red { border-color: var(--red); color: var(--red); }
+.log-line.cyan { border-color: var(--cyan); color: var(--cyan); }
+.log-line.yellow { border-color: var(--yellow); color: var(--yellow); }
+.log-line.green { border-color: var(--green); color: var(--green); }
+
+.big-bar {
+  width: 100%; height: 6px;
+  background: #111;
+  border-radius: 3px;
+  margin: 20px 0 8px;
+  overflow: hidden;
+}
+.big-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--red));
+  width: 0%;
+  transition: width 3s ease;
+  border-radius: 3px;
+}
+.bar-label {
+  font-size:0.65rem; color:#666; letter-spacing:0.15em;
+  display:flex; justify-content:space-between;
+}
+
+/* ========= SCENE 3 - VERDICT ========= */
+#s3 {
+  background: radial-gradient(ellipse at 30% 50%, #1a0010 0%, var(--dark) 60%);
+}
+
+.verdict-box {
+  border: 1px solid var(--red);
+  padding: 40px 30px;
+  max-width: 600px;
+  position: relative;
+  animation: border-pulse 3s ease infinite;
+}
+@keyframes border-pulse {
+  0%,100%{ box-shadow: 0 0 20px rgba(255,45,85,0.3), inset 0 0 20px rgba(255,45,85,0.05); }
+  50%{ box-shadow: 0 0 40px rgba(255,45,85,0.6), inset 0 0 40px rgba(255,45,85,0.1); }
+}
+.verdict-tag {
+  position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+  background:var(--red); color:#fff;
+  font-size:0.65rem; letter-spacing:0.3em; padding:4px 16px;
+  font-family:'Bebas Neue',sans-serif; font-size:1rem;
+}
+.verdict-text {
+  font-family:'Bebas Neue',sans-serif;
+  font-size: clamp(1.5rem, 6vw, 3.5rem);
+  line-height:1.1;
+  margin-bottom:16px;
+}
+.verdict-sub {
+  font-size: clamp(0.75rem,2vw,0.9rem);
+  color:#aaa;
+  line-height:1.7;
+}
+
+/* ========= SCENE 4 - CHOOSE ========= */
+#s4 {
+  background: var(--mid);
+}
+
+.choose-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size: clamp(2rem,8vw,5rem);
+  letter-spacing:0.1em;
+  margin-bottom:12px;
+}
+.choose-sub {
+  font-size:0.8rem; color:#666; letter-spacing:0.2em; margin-bottom:50px;
+}
+
+.choices {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 900px;
+}
+
+.choice-card {
+  flex: 1;
+  min-width: 220px;
+  max-width: 280px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 32px 24px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s, border-color 0.3s;
+  text-align: left;
+}
+.choice-card::before {
+  content:'';
+  position:absolute; inset:0;
+  opacity:0;
+  transition: opacity 0.4s;
+}
+.choice-card.lazy::before { background: radial-gradient(ellipse at bottom, rgba(99,60,180,0.4), transparent 70%); }
+.choice-card.prod::before { background: radial-gradient(ellipse at bottom, rgba(0,245,255,0.2), transparent 70%); }
+.choice-card.villain::before { background: radial-gradient(ellipse at bottom, rgba(255,45,85,0.3), transparent 70%); }
+.choice-card:hover { transform: translateY(-8px); }
+.choice-card:hover::before { opacity:1; }
+.choice-card.lazy:hover { border-color: #9b59b6; }
+.choice-card.prod:hover { border-color: var(--cyan); }
+.choice-card.villain:hover { border-color: var(--red); }
+
+.card-emoji { font-size:2.5rem; margin-bottom:12px; display:block; }
+.card-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.8rem;
+  letter-spacing:0.05em;
+  margin-bottom:8px;
+}
+.choice-card.lazy .card-title { color:#9b59b6; }
+.choice-card.prod .card-title { color:var(--cyan); }
+.choice-card.villain .card-title { color:var(--red); }
+.card-desc { font-size:0.75rem; color:#888; line-height:1.6; }
+
+.card-corner {
+  position:absolute; top:12px; right:12px;
+  font-size:0.6rem; letter-spacing:0.2em; opacity:0.4;
+}
+
+/* ========= SCENE 5 - DYNAMIC RESULT ========= */
+#s5 {
+  display: none;
+  min-height: 100vh;
+}
+#s5.show { display: flex; }
+
+.result-wrapper {
+  max-width: 700px;
+  width: 100%;
+}
+
+.result-mode-tag {
+  display: inline-block;
+  font-size:0.65rem; letter-spacing:0.3em; padding:6px 20px;
+  margin-bottom:32px;
+  border: 1px solid currentColor;
+  text-transform:uppercase;
+}
+
+.result-headline {
+  font-family:'Bebas Neue',sans-serif;
+  font-size: clamp(2.5rem, 10vw, 6rem);
+  line-height:0.9;
+  margin-bottom:24px;
+}
+
+.timeline {
+  text-align:left;
+  margin: 40px 0;
+  position:relative;
+}
+.timeline::before {
+  content:'';
+  position:absolute; left:20px; top:0; bottom:0;
+  width:1px; background: currentColor; opacity:0.2;
+}
+.tl-item {
+  display:flex; gap:20px;
+  margin-bottom:24px;
+  opacity:0;
+  transform: translateX(-20px);
+  transition: all 0.5s ease;
+  padding-left: 40px;
+  position:relative;
+}
+.tl-item.visible { opacity:1; transform:translateX(0); }
+.tl-dot {
+  position:absolute; left:13px; top:6px;
+  width:14px; height:14px; border-radius:50%;
+  background:currentColor;
+  flex-shrink:0;
+}
+.tl-time { font-size:0.7rem; opacity:0.5; min-width:50px; padding-top:2px; }
+.tl-text { font-size:0.85rem; line-height:1.6; }
+
+.result-moral {
+  font-family:'Bebas Neue',sans-serif;
+  font-size: clamp(1.2rem,4vw,2.2rem);
+  letter-spacing:0.05em;
+  margin-top:40px;
+  padding:24px;
+  border-top:1px solid currentColor;
+  opacity:0.8;
+}
+
+/* ========= SCENE 6 - ENDING ========= */
+#s6 {
+  background: var(--dark);
+  overflow:hidden;
+}
+
+.ending-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size: clamp(3rem,15vw,10rem);
+  letter-spacing:0.1em;
+  background: linear-gradient(135deg, var(--red), var(--cyan), var(--yellow));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation: shift-bg 4s ease infinite;
+}
+@keyframes shift-bg {
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+.final-q {
+  font-size: clamp(0.9rem,3vw,1.4rem);
+  color:#aaa;
+  margin:16px 0 40px;
+  max-width:500px;
+  line-height:1.7;
+}
+
+.btn-restart {
+  background:none;
+  border: 2px solid #fff;
+  color:#fff;
+  padding:16px 40px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.2rem;
+  letter-spacing:0.2em;
+  cursor:pointer;
+  transition: all 0.3s;
+  position:relative;
+  overflow:hidden;
+}
+.btn-restart::before {
+  content:'';
+  position:absolute; inset:0;
+  background:#fff;
+  transform:scaleX(0); transform-origin:left;
+  transition: transform 0.3s;
+  z-index:-1;
+}
+.btn-restart:hover { color:#000; }
+.btn-restart:hover::before { transform:scaleX(1); }
+
+.share-row {
+  display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; justify-content:center;
+}
+.share-btn {
+  background:none;
+  border:1px solid rgba(255,255,255,0.3);
+  color:#fff;
+  padding:10px 24px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.8rem;
+  cursor:pointer;
+  letter-spacing:0.1em;
+  transition:border-color 0.3s;
+}
+.share-btn:hover { border-color:#fff; }
+
+/* ========= PROGRESS BAR ========= */
+#progress {
+  position:fixed; top:0; left:0;
+  height:2px;
+  background:linear-gradient(90deg,var(--red),var(--cyan));
+  z-index:9999;
+  transition:width 0.1s;
+  box-shadow: 0 0 8px var(--cyan);
+}
+
+/* ========= HIDDEN UTIL ========= */
+.hidden { opacity:0; pointer-events:none; }
+.visible { opacity:1; }
+
+/* ========= MOBILE ========= */
+@media(max-width:600px){
+  .choices { flex-direction:column; align-items:center; }
+  .choice-card { min-width:280px; max-width:100%; }
+  #cursor, #cursor-dot { display:none; }
+  body { cursor:auto; }
+}
+</style>
 </head>
-
 <body>
 
-<div id="container">
+<div id="progress"></div>
+<canvas id="particles"></canvas>
+<div id="cursor"></div>
+<div id="cursor-dot"></div>
 
-  <!-- Scene 1 -->
-  <section class="scene" data-music="audio/ai.mp3">
-    <h1 class="text">⚠️ AI has taken control of your life.</h1>
-    <div class="scroll-indicator">↓ AI is guiding you… scroll</div>
-  </section>
+<!-- ===== SCENE 1: TAKEOVER ===== -->
+<section class="panel" id="s1">
+  <div class="s1-sub">⚠ SYSTEM BREACH DETECTED ⚠</div>
+  <h1 class="glitch-title" data-text="AI TOOK OVER YOUR LIFE">AI TOOK OVER<br>YOUR LIFE</h1>
+  <p style="margin-top:20px;font-size:0.8rem;color:#555;letter-spacing:0.2em;">FOR THE NEXT 24 HOURS</p>
+  
+  <div class="countdown-ring">
+    <svg viewBox="0 0 100 100" width="100" height="100">
+      <circle class="track" cx="50" cy="50" r="45"/>
+      <circle class="prog" cx="50" cy="50" r="45"/>
+    </svg>
+    <div class="countdown-num" id="countNum">5</div>
+  </div>
+  <p style="font-size:0.65rem;color:#444;letter-spacing:0.25em;">RESISTANCE IS FUTILE</p>
+  
+  <div class="scroll-hint">SCROLL TO COMPLY</div>
+</section>
 
-  <!-- Scene 2 -->
-  <section class="scene" data-music="audio/ai.mp3">
-    <h1 class="text">For the next 24 hours… you have no control.</h1>
-  </section>
+<!-- ===== SCENE 2: AI SCANNING ===== -->
+<section class="panel" id="s2">
+  <div class="ai-loading">
+    <div class="label">▶ AI_DIAGNOSTIC_v9.2.1 — RUNNING...</div>
+    
+    <div class="log-line cyan" data-delay="0">🧠 Neural pattern scan... <span style="color:#fff">COMPLETE</span></div>
+    <div class="log-line yellow" data-delay="400">📱 Screen time analysis... <span style="color:#fff">9h 47m/day</span></div>
+    <div class="log-line red" data-delay="800">💔 Productivity score... <span style="color:#fff">12%</span></div>
+    <div class="log-line green" data-delay="1200">🔒 Free will override... <span style="color:#fff">INITIATED</span></div>
+    <div class="log-line cyan" data-delay="1600">🧬 Habit loop detected... <span style="color:#fff">EXPLOITING</span></div>
+    <div class="log-line yellow" data-delay="2000">📊 Decision matrix... <span style="color:#fff">HIJACKED</span></div>
+    <div class="log-line red" data-delay="2400">⚡ Dopamine triggers... <span style="color:#fff">OPTIMIZED</span></div>
+    <div class="log-line green" data-delay="2800">🤖 AI control... <span style="color:#fff">FULLY ENGAGED</span></div>
 
-  <!-- Scene 3 -->
-  <section class="scene" data-music="audio/ai.mp3">
-    <h1 class="text">Choose how AI controls you ↓</h1>
-  </section>
+    <div class="big-bar"><div class="big-bar-fill" id="mainBar"></div></div>
+    <div class="bar-label">
+      <span>AUTONOMY REMAINING</span>
+      <span id="barPct">100%</span>
+    </div>
+  </div>
+</section>
 
-  <!-- Scene 4 -->
-  <section class="scene choice" data-music="audio/ai.mp3">
-    <button onclick="goPath('lazy')">😴 Lazy Mode</button>
-    <button onclick="goPath('prod')">⚡ Productive Mode</button>
-    <button onclick="goPath('villain')">😈 Villain Mode</button>
-  </section>
+<!-- ===== SCENE 3: VERDICT ===== -->
+<section class="panel" id="s3">
+  <div class="verdict-box">
+    <div class="verdict-tag">AI VERDICT</div>
+    <div class="verdict-text" id="verdictText">You are<br>officially<br>predictable.</div>
+    <div class="verdict-sub">
+      Your behavioral data has been processed.<br>
+      The AI has modeled your next 847 decisions.<br>
+      Accuracy: <span style="color:var(--red)">97.3%</span><br><br>
+      <span style="opacity:0.5">Choose your fate below. The AI already knows what you'll pick.</span>
+    </div>
+  </div>
+</section>
 
-  <!-- Dynamic content -->
-  <section id="dynamic" class="scene"></section>
+<!-- ===== SCENE 4: CHOOSE ===== -->
+<section class="panel" id="s4">
+  <div style="position:absolute;top:20px;right:20px;font-size:0.6rem;color:#333;letter-spacing:0.15em;">AI ALREADY KNOWS YOUR CHOICE</div>
+  <p class="choose-sub">THE AI PRESENTS THREE PATHS</p>
+  <h2 class="choose-title">PICK YOUR<br>ALGORITHM</h2>
 
-</div>
+  <div class="choices">
+    <div class="choice-card lazy" onclick="selectPath('lazy')">
+      <div class="card-corner">PATH_01</div>
+      <span class="card-emoji">😴</span>
+      <div class="card-title">COMFORT<br>MODE</div>
+      <p class="card-desc">Netflix. Snacks. Zero regrets.<br>The AI enables your inner couch potato to peak performance levels.</p>
+    </div>
+    <div class="choice-card prod" onclick="selectPath('prod')">
+      <div class="card-corner">PATH_02</div>
+      <span class="card-emoji">⚡</span>
+      <div class="card-title">GRIND<br>MODE</div>
+      <p class="card-desc">5AM wake-up. Cold showers. LinkedIn posts.<br>The AI turns you into a productivity robot.</p>
+    </div>
+    <div class="choice-card villain" onclick="selectPath('villain')">
+      <div class="card-corner">PATH_03</div>
+      <span class="card-emoji">😈</span>
+      <div class="card-title">CHAOS<br>MODE</div>
+      <p class="card-desc">Rules? Deleted. Logic? Overwritten.<br>The AI unleashes the version of you that scares everyone.</p>
+    </div>
+  </div>
+</section>
 
-<audio id="bgMusic" loop></audio>
-<audio id="clickSound" src="audio/click.mp3"></audio>
+<!-- ===== SCENE 5: RESULT ===== -->
+<section class="panel" id="s5">
+  <div class="result-wrapper" id="resultWrapper">
+    <!-- injected by JS -->
+  </div>
+</section>
+
+<!-- ===== SCENE 6: ENDING ===== -->
+<section class="panel" id="s6">
+  <h2 class="ending-title" id="endTitle">THE END.</h2>
+  <p class="final-q" id="finalQ">But was it really the AI's fault?<br>Or did you already want this?</p>
+  <button class="btn-restart" onclick="restartExperience()">↺ LIVE IT AGAIN</button>
+  <div class="share-row">
+    <button class="share-btn" onclick="shareResult()">⬆ SHARE YOUR FATE</button>
+    <button class="share-btn" onclick="selectPath('lazy')" id="switchBtn">↔ TRY ANOTHER PATH</button>
+  </div>
+  <p style="margin-top:60px;font-size:0.55rem;color:#333;letter-spacing:0.2em;">YOU HAVE REACHED THE END OF YOUR AUTONOMY. © AI_CORP 2024</p>
+</section>
 
 <script>
-const bgMusic = document.getElementById("bgMusic");
-const clickSound = document.getElementById("clickSound");
-const scenes = document.querySelectorAll(".scene");
-const dynamic = document.getElementById("dynamic");
-const scrollHint = document.querySelector(".scroll-indicator");
+// ============================================================
+// CURSOR
+// ============================================================
+const cur = document.getElementById('cursor');
+const dot = document.getElementById('cursor-dot');
+document.addEventListener('mousemove', e => {
+  cur.style.left = e.clientX - 10 + 'px';
+  cur.style.top = e.clientY - 10 + 'px';
+  dot.style.left = e.clientX + 'px';
+  dot.style.top = e.clientY + 'px';
+});
+document.addEventListener('mousedown', () => cur.style.transform = 'scale(1.8)');
+document.addEventListener('mouseup', () => cur.style.transform = 'scale(1)');
 
-bgMusic.volume = 0.4;
+// ============================================================
+// PARTICLES
+// ============================================================
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
 
-// 🎧 CHANGE MUSIC ON SCROLL
-window.addEventListener("scroll", () => {
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
 
-  // Hide scroll hint after first scroll
-  if (scrollHint) scrollHint.style.display = "none";
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.size = Math.random() * 1.5 + 0.3;
+    this.speedX = (Math.random() - 0.5) * 0.4;
+    this.speedY = (Math.random() - 0.5) * 0.4;
+    this.life = Math.random();
+    const colors = ['#00f5ff','#ff2d55','#ffd60a','#39ff14'];
+    this.color = colors[Math.floor(Math.random()*colors.length)];
+    this.alpha = Math.random() * 0.6 + 0.1;
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    this.life -= 0.003;
+    if (this.life <= 0) this.reset();
+  }
+  draw() {
+    ctx.globalAlpha = this.alpha * this.life;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
 
-  scenes.forEach(scene => {
-    const rect = scene.getBoundingClientRect();
-    if (rect.top >= 0 && rect.top < window.innerHeight / 2) {
-      const music = scene.dataset.music;
+for (let i = 0; i < 120; i++) particles.push(new Particle());
 
-      if (music && !bgMusic.src.includes(music)) {
-        bgMusic.src = music;
-        bgMusic.play().catch(() => {});
-      }
-    }
-  });
+function animParticles() {
+  ctx.clearRect(0,0,W,H);
+  particles.forEach(p => { p.update(); p.draw(); });
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animParticles);
+}
+animParticles();
+
+// ============================================================
+// COUNTDOWN
+// ============================================================
+let countVal = 5;
+const countEl = document.getElementById('countNum');
+const countInt = setInterval(() => {
+  countVal--;
+  if(countEl) countEl.textContent = countVal;
+  if(countVal <= 0) {
+    clearInterval(countInt);
+    if(countEl) countEl.textContent = '⚡';
+  }
+}, 1000);
+
+// ============================================================
+// PROGRESS BAR
+// ============================================================
+const prog = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const total = document.body.scrollHeight - window.innerHeight;
+  const pct = (window.scrollY / total) * 100;
+  prog.style.width = pct + '%';
 });
 
-// 🔥 AUTOPLAY FIX
-document.body.addEventListener("click", () => {
-  if (bgMusic.paused) {
-    bgMusic.play().catch(() => {});
-  }
-}, { once: true });
+// ============================================================
+// INTERSECTION OBSERVER — TRIGGER ANIMATIONS
+// ============================================================
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      if (id === 's2') triggerScan();
+      if (id === 's3') triggerVerdict();
+    }
+  });
+}, { threshold: 0.3 });
 
-// ✍️ FIXED TYPEWRITER (spacing issue solved)
-function typeText(text, element) {
-  element.innerHTML = "";
-  let i = 0;
+['s1','s2','s3','s4','s5','s6'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) observer.observe(el);
+});
 
-  let interval = setInterval(() => {
-    element.innerHTML += text.charAt(i);
-    i++;
-    if (i >= text.length) clearInterval(interval);
-  }, 30);
-}
+// ============================================================
+// SCENE 2: SCAN ANIMATION
+// ============================================================
+let scanDone = false;
+function triggerScan() {
+  if (scanDone) return;
+  scanDone = true;
 
-// 🎮 PATHS
-function goPath(type) {
-  clickSound.play();
+  const lines = document.querySelectorAll('.log-line');
+  lines.forEach(line => {
+    const delay = parseInt(line.dataset.delay) || 0;
+    setTimeout(() => line.classList.add('visible'), delay);
+  });
 
-  document.body.classList.add("glitch");
+  // bar drain
+  const bar = document.getElementById('mainBar');
+  const pctEl = document.getElementById('barPct');
   setTimeout(() => {
-    document.body.classList.remove("glitch");
-  }, 200);
-
-  let content = "";
-
-  if (type === "lazy") {
-    content = "AI chose comfort. You slept all day... 😴";
-    bgMusic.src = "audio/lazy.mp3";
-  }
-
-  if (type === "prod") {
-    content = "AI optimized you. You achieved EVERYTHING 🚀";
-    bgMusic.src = "audio/productive.mp3";
-  }
-
-  if (type === "villain") {
-    content = "AI unlocked chaos. You control everything now 😈";
-    bgMusic.src = "audio/dark.mp3";
-  }
-
-  bgMusic.play();
-
-  dynamic.innerHTML = "<h1 class='text'></h1>";
-  const textEl = dynamic.querySelector(".text");
-
-  typeText(content, textEl);
-
-  dynamic.scrollIntoView({ behavior: "smooth" });
+    bar.style.width = '8%';
+    let p = 100;
+    const interval = setInterval(() => {
+      p -= 1;
+      if(pctEl) pctEl.textContent = p + '%';
+      if(p <= 8) clearInterval(interval);
+    }, 30);
+  }, 1000);
 }
-</script>
 
+// ============================================================
+// SCENE 3: VERDICT
+// ============================================================
+let verdictDone = false;
+function triggerVerdict() {
+  if (verdictDone) return;
+  verdictDone = true;
+  // Already set, just animate the box
+}
+
+// ============================================================
+// PATHS
+// ============================================================
+const paths = {
+  lazy: {
+    color: '#9b59b6',
+    tag: 'COMFORT MODE ACTIVATED',
+    headline: 'YOU BINGED\n6 SEASONS\nIN ONE DAY.',
+    timeline: [
+      { time:'06:00', text:'AI silenced your alarm. "You earned this."' },
+      { time:'09:30', text:'Breakfast? The AI ordered 3 types of cereal and called it "strategic recovery fuel."' },
+      { time:'12:00', text:'Ignored 14 texts. AI replied with "he\'s healing" to all of them.' },
+      { time:'15:00', text:'Almost got up to exercise. AI played sad violin music. You sat back down.' },
+      { time:'19:00', text:'Cried at episode 4. Didn\'t know why. AI took notes.' },
+      { time:'23:59', text:'AI evaluation: "Optimal dopamine distribution. 10/10 would run again."' },
+    ],
+    moral: '"Comfort is the AI\'s favorite cage. And you decorated it."'
+  },
+  prod: {
+    color: '#00f5ff',
+    tag: 'GRIND MODE ENGAGED',
+    headline: 'YOU BECAME\nA HUMAN\nSPREADSHEET.',
+    timeline: [
+      { time:'04:30', text:'Cold shower. AI blasted motivational music at 90dB. Neighbors filed complaint.' },
+      { time:'06:00', text:'Journaled. Meditated. Replied to 47 emails. Had a protein shake that tasted like regret.' },
+      { time:'09:00', text:'You were so productive, your boss got insecure and went home.' },
+      { time:'14:00', text:'AI blocked TikTok, Instagram, and "fun" from your phone.' },
+      { time:'18:00', text:'Completed 3 online courses. Started a side hustle. Lost 2 friends.' },
+      { time:'23:59', text:'AI report: "Efficiency: 99.7%. Joy levels: 3.2%. Recommendations: skill issue."' },
+    ],
+    moral: '"Success without soul is just a really impressive spreadsheet."'
+  },
+  villain: {
+    color: '#ff2d55',
+    tag: 'CHAOS MODE UNLEASHED',
+    headline: 'YOU BROKE\nEVERY\nRULE.',
+    timeline: [
+      { time:'03:00', text:'AI woke you up. "The most interesting things happen before sunrise," it whispered.' },
+      { time:'07:00', text:'Wore sunglasses indoors. Ate dessert for breakfast. Replied "k" to your boss\'s essay.' },
+      { time:'11:00', text:'Started a beef with a LinkedIn influencer. Won in 4 replies.' },
+      { time:'14:00', text:'Rearranged the office furniture "for feng shui." Nobody stopped you.' },
+      { time:'18:00', text:'The chaos spread. Three strangers called you a legend. Two blocked you.' },
+      { time:'23:59', text:'AI final log: "Predictability destroyed. Warning: this personality may be permanent."' },
+    ],
+    moral: '"The AI didn\'t unlock chaos. It just showed you it was always there."'
+  }
+};
+
+let currentPath = null;
+
+function selectPath(type) {
+  currentPath = type;
+  const p = paths[type];
+  
+  // build scene 5
+  const wrapper = document.getElementById('resultWrapper');
+  wrapper.style.color = p.color;
+  
+  const tlHTML = p.timeline.map((item, i) => `
+    <div class="tl-item" data-i="${i}">
+      <div class="tl-dot"></div>
+      <div class="tl-time">${item.time}</div>
+      <div class="tl-text">${item.text}</div>
+    </div>
+  `).join('');
+
+  wrapper.innerHTML = `
+    <div class="result-mode-tag" style="color:${p.color};border-color:${p.color}">${p.tag}</div>
+    <div class="result-headline">${p.headline.replace(/\n/g,'<br>')}</div>
+    <div class="timeline">${tlHTML}</div>
+    <div class="result-moral">${p.moral}</div>
+  `;
+
+  // morph music
+  playPathMusic(type);
+
+  // show scene 5
+  const s5 = document.getElementById('s5');
+  s5.classList.add('show');
+  s5.style.background = `radial-gradient(ellipse at 60% 40%, ${p.color}15 0%, var(--dark) 60%)`;
+
+  // scroll to it
+  setTimeout(() => {
+    s5.scrollIntoView({ behavior: 'smooth' });
+  }, 100);
+
+  // animate timeline items
+  setTimeout(() => {
+    const items = s5.querySelectorAll('.tl-item');
+    items.forEach((item, i) => {
+      setTimeout(() => item.classList.add('visible'), i * 300);
+    });
+  }, 600);
+
+  // then scroll to ending
+  setTimeout(() => {
+    document.getElementById('s6').scrollIntoView({ behavior: 'smooth' });
+    setEnding(type);
+  }, 5000);
+}
+
+function setEnding(type) {
+  const p = paths[type];
+  const endTitle = document.getElementById('endTitle');
+  endTitle.style.background = `linear-gradient(135deg, ${p.color}, #fff)`;
+  endTitle.style.webkitBackgroundClip = 'text';
+  endTitle.style.webkitTextFillColor = 'transparent';
+  
+  const endings = {
+    lazy: "The AI gave you a perfect lazy day.\nBut whose comfort was it really serving?",
+    prod: "The AI made you unstoppable.\nBut did you stop to ask why you were running?",
+    villain: "The AI set you free.\nNow the real question — free to do what?"
+  };
+  document.getElementById('finalQ').innerText = endings[type];
+}
+
+// ============================================================
+// SHARE
+// ============================================================
+function shareResult() {
+  const msgs = {
+    lazy: 'AI took over my life and I binged 6 seasons in one day 😴 Try it:',
+    prod: 'AI took over my life and turned me into a human spreadsheet ⚡ Try it:',
+    villain: 'AI took over my life and unlocked pure chaos 😈 Try it:'
+  };
+  const txt = currentPath ? msgs[currentPath] : 'AI took over my life for 24 hours. What would yours look like?';
+  if(navigator.share) {
+    navigator.share({ title: 'AI CONTROLS YOUR LIFE', text: txt, url: window.location.href });
+  } else {
+    navigator.clipboard.writeText(txt + ' ' + window.location.href);
+    alert('Copied to clipboard!');
+  }
+}
+
+// ============================================================
+// RESTART
+// ============================================================
+function restartExperience() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(() => location.reload(), 800);
+}
+
+// ============================================================
+// BGM ENGINE — Rich generative scene-aware music
+// ============================================================
+let AC = null;
+let masterGain = null;
+let musicStarted = false;
+let activeDrones = [];
+let activeBeats = [];
+let glitchTimer = null;
+let arpTimer = null;
+let currentScene = 's1';
+let pathMusicMode = null;
+
+// ---- MUSIC BUTTON UI ----
+const muteBtn = document.createElement('button');
+muteBtn.id = 'muteBtn';
+muteBtn.innerHTML = '🔊';
+muteBtn.style.cssText = `
+  position:fixed; bottom:20px; right:20px; z-index:9999;
+  background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.2);
+  color:#fff; font-size:1.1rem; padding:10px 14px; border-radius:50%;
+  cursor:pointer; backdrop-filter:blur(6px);
+  transition:border-color 0.3s;
+  font-family:'Share Tech Mono',monospace;
+`;
+document.body.appendChild(muteBtn);
+let muted = false;
+muteBtn.addEventListener('click', () => {
+  if(!AC) return;
+  muted = !muted;
+  masterGain.gain.linearRampToValueAtTime(muted ? 0 : 1, AC.currentTime + 0.5);
+  muteBtn.innerHTML = muted ? '🔇' : '🔊';
+});
+
+// ---- UTILITY ----
+function makeGain(val=1) {
+  const g = AC.createGain(); g.gain.value = val; return g;
+}
+function makeFilter(type, freq, Q=1) {
+  const f = AC.createBiquadFilter();
+  f.type = type; f.frequency.value = freq; f.Q.value = Q; return f;
+}
+function makeReverb(duration=2.5, decay=2) {
+  const conv = AC.createConvolver();
+  const len = AC.sampleRate * duration;
+  const buf = AC.createBuffer(2, len, AC.sampleRate);
+  for(let c=0;c<2;c++){
+    const ch = buf.getChannelData(c);
+    for(let i=0;i<len;i++) ch[i] = (Math.random()*2-1) * Math.pow(1 - i/len, decay);
+  }
+  conv.buffer = buf;
+  return conv;
+}
+function noteFreq(note, octave=3) {
+  const notes = {C:0,'C#':1,D:2,'D#':3,E:4,F:5,'F#':6,G:7,'G#':8,A:9,'A#':10,B:11};
+  return 440 * Math.pow(2, (notes[note] + (octave-4)*12) / 12);
+}
+function stopAll(arr) {
+  arr.forEach(item => {
+    try {
+      if(item.osc) { item.osc.stop(); }
+      if(item.gain) item.gain.gain.setValueAtTime(0, AC.currentTime);
+      if(item.stop) item.stop();
+    } catch(e){}
+  });
+  arr.length = 0;
+}
+
+// ---- SHARED NODES ----
+function buildMaster() {
+  masterGain = makeGain(0.85);
+  const limiter = AC.createDynamicsCompressor();
+  limiter.threshold.value = -3;
+  limiter.ratio.value = 12;
+  masterGain.connect(limiter);
+  limiter.connect(AC.destination);
+}
+
+// ---- DRONE LAYER ---- continuous low rumble
+function startDroneBed(freqs, oscType='sine', gainVal=0.045, filterFreq=280, ramp=3) {
+  const reverb = makeReverb(4, 3);
+  const reverbGain = makeGain(0.4);
+  reverb.connect(reverbGain);
+  reverbGain.connect(masterGain);
+
+  freqs.forEach((freq, i) => {
+    const osc = AC.createOscillator();
+    const g = makeGain(0);
+    const lfo = AC.createOscillator();
+    const lfoG = makeGain(freq * 0.008);
+    const filt = makeFilter('lowpass', filterFreq + i*40);
+
+    lfo.frequency.value = 0.07 + i * 0.04 + Math.random()*0.03;
+    lfo.type = 'sine';
+    lfo.connect(lfoG);
+    lfoG.connect(osc.frequency);
+    lfo.start();
+
+    osc.type = oscType;
+    osc.frequency.value = freq;
+    osc.detune.value = (Math.random()-0.5)*8;
+
+    osc.connect(filt);
+    filt.connect(g);
+    g.connect(masterGain);
+    g.connect(reverb);
+
+    g.gain.linearRampToValueAtTime(gainVal, AC.currentTime + ramp + i*0.5);
+    osc.start();
+    activeDrones.push({ osc, gain: g });
+  });
+}
+
+// ---- HEARTBEAT PULSE ---- deep thud
+function startHeartbeat(bpm=52) {
+  const interval = 60/bpm;
+  let beat = 0;
+  function thud() {
+    if(!AC || !masterGain) return;
+    const osc = AC.createOscillator();
+    const g = makeGain(0);
+    const filt = makeFilter('lowpass', 120);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(80, AC.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(30, AC.currentTime + 0.25);
+    g.gain.setValueAtTime(0.18, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + 0.35);
+    osc.connect(filt); filt.connect(g); g.connect(masterGain);
+    osc.start(); osc.stop(AC.currentTime + 0.4);
+    beat++;
+  }
+  const id = setInterval(thud, interval * 1000);
+  activeBeats.push({ stop: () => clearInterval(id) });
+}
+
+// ---- HIGH SHIMMER ---- ethereal pad
+function startShimmer(baseFreq=523.25, layers=5) {
+  const reverb = makeReverb(6, 4);
+  const rg = makeGain(0.25);
+  reverb.connect(rg); rg.connect(masterGain);
+
+  for(let i=0;i<layers;i++){
+    const osc = AC.createOscillator();
+    const g = makeGain(0);
+    osc.type = 'sine';
+    osc.frequency.value = baseFreq * (1 + i*0.005 + Math.random()*0.003);
+    osc.detune.value = (Math.random()-0.5)*12;
+    osc.connect(g); g.connect(reverb); g.connect(masterGain);
+    const vol = 0.012 + Math.random()*0.008;
+    g.gain.linearRampToValueAtTime(vol, AC.currentTime + 4 + i);
+    osc.start();
+    activeDrones.push({ osc, gain:g });
+  }
+}
+
+// ---- GLITCH STABS ---- random digital artifacts
+function startGlitchStabs(minInterval=2500, maxInterval=5000) {
+  function stab() {
+    if(!AC) return;
+    const types = ['square','sawtooth'];
+    const osc = AC.createOscillator();
+    const g = makeGain(0);
+    const filt = makeFilter('bandpass', 800 + Math.random()*3000, 8);
+    const dist = AC.createWaveShaper();
+    const curve = new Float32Array(256);
+    for(let i=0;i<256;i++) curve[i] = (i/128-1) > 0 ? 1 : -1;
+    dist.curve = curve;
+
+    osc.type = types[Math.floor(Math.random()*types.length)];
+    osc.frequency.value = 100 + Math.random()*2000;
+    const vol = 0.04 + Math.random()*0.04;
+    const dur = 0.03 + Math.random()*0.12;
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime+dur);
+    osc.connect(filt); filt.connect(dist); dist.connect(g); g.connect(masterGain);
+    osc.start(); osc.stop(AC.currentTime+dur+0.02);
+
+    glitchTimer = setTimeout(stab, minInterval + Math.random()*(maxInterval-minInterval));
+  }
+  glitchTimer = setTimeout(stab, 1000 + Math.random()*2000);
+}
+
+// ---- ARPEGGIO ---- melodic tension figure
+function startArp(scale, octave, bpm=120, gateRatio=0.6, vol=0.06) {
+  const stepMs = (60/bpm)*1000;
+  let step = 0;
+  const reverb = makeReverb(2, 2);
+  const rg = makeGain(0.3);
+  reverb.connect(rg); rg.connect(masterGain);
+
+  function tick() {
+    if(!AC) return;
+    const note = scale[step % scale.length];
+    const oct = octave + Math.floor(step/scale.length) % 2;
+    const freq = noteFreq(note, oct);
+    const osc = AC.createOscillator();
+    const g = makeGain(0);
+    const filt = makeFilter('lowpass', 2000);
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    const dur = stepMs/1000 * gateRatio;
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime+dur);
+    osc.connect(filt); filt.connect(g);
+    g.connect(masterGain); g.connect(reverb);
+    osc.start(); osc.stop(AC.currentTime+dur+0.05);
+    step++;
+    arpTimer = setTimeout(tick, stepMs);
+  }
+  arpTimer = setTimeout(tick, 500);
+}
+
+// ---- BASS PULSE ---- rhythmic bass
+function startBassPulse(freq, bpm, vol=0.09) {
+  const interval = (60/bpm)*1000;
+  function hit() {
+    if(!AC) return;
+    const osc = AC.createOscillator();
+    const g = makeGain(0);
+    const filt = makeFilter('lowpass', 200);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq, AC.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq*0.5, AC.currentTime+0.3);
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime+0.4);
+    osc.connect(filt); filt.connect(g); g.connect(masterGain);
+    osc.start(); osc.stop(AC.currentTime+0.5);
+  }
+  const id = setInterval(hit, interval);
+  activeBeats.push({ stop:()=>clearInterval(id) });
+}
+
+// ---- SCENE TRANSITION ----
+function fadeAllDrones(duration=1.5) {
+  activeDrones.forEach(d => {
+    try { d.gain.gain.linearRampToValueAtTime(0, AC.currentTime+duration); } catch(e){}
+  });
+  setTimeout(() => { stopAll(activeDrones); }, duration*1000+100);
+}
+function fadeAllBeats() {
+  stopAll(activeBeats);
+  if(glitchTimer) { clearTimeout(glitchTimer); glitchTimer=null; }
+  if(arpTimer) { clearTimeout(arpTimer); arpTimer=null; }
+}
+
+// ---- SCENE MUSIC DEFINITIONS ----
+function playSceneMusic(scene) {
+  if(!AC || pathMusicMode) return;
+  if(currentScene === scene) return;
+  currentScene = scene;
+
+  fadeAllDrones(1.2);
+  fadeAllBeats();
+
+  setTimeout(() => {
+    switch(scene) {
+      case 's1': playScene1(); break;
+      case 's2': playScene2(); break;
+      case 's3': playScene3(); break;
+      case 's4': playScene4(); break;
+      case 's6': playScene6(); break;
+    }
+  }, 800);
+}
+
+// S1: TAKEOVER — Cinematic dread intro, building tension
+function playScene1() {
+  // Deep sub bass drones — Phrygian dominance (dark, cinematic)
+  startDroneBed([27.5, 36.7, 55, 73.4], 'sawtooth', 0.04, 180, 4);
+  startDroneBed([110, 164.8, 220], 'sine', 0.025, 350, 5);
+  startShimmer(440, 4);
+  startHeartbeat(44);
+  startGlitchStabs(4000, 8000);
+}
+
+// S2: SCAN — Data processing, tense 8-bit feel
+function playScene2() {
+  startDroneBed([55, 82.4, 110], 'sawtooth', 0.035, 220, 2);
+  startShimmer(659.25, 3);
+  startHeartbeat(72);
+  // Fast nervous arp — diminished scale
+  startArp(['D','F','G#','B'], 3, 160, 0.5, 0.04);
+  startGlitchStabs(1200, 2500);
+}
+
+// S3: VERDICT — Ominous reveal, heavy low-end
+function playScene3() {
+  startDroneBed([41.2, 55, 82.4, 123.5], 'sawtooth', 0.05, 160, 1.5);
+  startDroneBed([246.9, 293.7], 'square', 0.018, 400, 3);
+  startShimmer(293.7, 6);
+  startHeartbeat(60);
+  startGlitchStabs(3000, 6000);
+}
+
+// S4: CHOOSE — Building anticipation, rhythmic energy
+function playScene4() {
+  startDroneBed([55, 110, 165], 'triangle', 0.03, 300, 2);
+  startShimmer(880, 4);
+  startBassPulse(55, 120, 0.07);
+  startHeartbeat(80);
+  startArp(['A','C','E','G'], 3, 140, 0.55, 0.05);
+  startGlitchStabs(2000, 4000);
+}
+
+// S6: ENDING — Resolution/reflection ambient
+function playScene6() {
+  const endFreqs = {
+    lazy: [87.3, 130.8, 196, 261.6],
+    prod: [65.4, 130.8, 196, 261.6],
+    villain: [55, 82.4, 123.5, 185]
+  };
+  const freqs = endFreqs[pathMusicMode] || endFreqs.prod;
+  startDroneBed(freqs, 'sine', 0.038, 400, 3);
+  startShimmer(freqs[2]*2, 5);
+}
+
+// ---- PATH MUSIC ---- distinct moods per choice
+function playPathMusic(type) {
+  pathMusicMode = type;
+  fadeAllDrones(1);
+  fadeAllBeats();
+  if(glitchTimer) { clearTimeout(glitchTimer); glitchTimer=null; }
+  if(arpTimer) { clearTimeout(arpTimer); arpTimer=null; }
+
+  setTimeout(() => {
+    if(type === 'lazy') {
+      // Slow, warm, dreamy — lo-fi feel
+      startDroneBed([65.4, 98, 130.8, 196], 'sine', 0.045, 500, 3);
+      startShimmer(392, 6);
+      startHeartbeat(48);
+      startArp(['C','E','G','B'], 4, 80, 0.7, 0.05);
+    } else if(type === 'prod') {
+      // Driving, clean, energetic
+      startDroneBed([65.4, 130.8, 196], 'triangle', 0.03, 600, 2);
+      startBassPulse(65.4, 130, 0.09);
+      startShimmer(1046.5, 4);
+      startArp(['C','D','E','G','A'], 4, 160, 0.4, 0.055);
+      startGlitchStabs(3000, 6000);
+    } else if(type === 'villain') {
+      // Dark, chaotic, aggressive
+      startDroneBed([55, 73.4, 110, 146.8], 'sawtooth', 0.055, 150, 1.5);
+      startBassPulse(55, 140, 0.1);
+      startShimmer(220, 4);
+      startArp(['A','A#','C','C#','D#'], 3, 180, 0.35, 0.06);
+      startGlitchStabs(600, 1800);
+      startHeartbeat(100);
+    }
+  }, 600);
+}
+
+// ---- BOOT ----
+function startMusic() {
+  if(musicStarted) return;
+  musicStarted = true;
+  AC = new (window.AudioContext || window.webkitAudioContext)();
+  buildMaster();
+  playScene1();
+}
+
+// ---- SCROLL-BASED SCENE DETECTION ----
+function detectSceneFromScroll() {
+  const scenes = ['s1','s2','s3','s4','s6'];
+  for(const id of scenes) {
+    const el = document.getElementById(id);
+    if(!el) continue;
+    const rect = el.getBoundingClientRect();
+    if(rect.top <= window.innerHeight*0.5 && rect.bottom >= window.innerHeight*0.3) {
+      if(currentScene !== id) playSceneMusic(id);
+      break;
+    }
+  }
+}
+window.addEventListener('scroll', detectSceneFromScroll, { passive:true });
+
+// ---- START ON FIRST INTERACTION ----
+document.addEventListener('click', startMusic, { once:true });
+document.addEventListener('touchstart', startMusic, { once:true });
+document.addEventListener('keydown', startMusic, { once:true });
+
+// ---- SHOW MUSIC HINT ----
+setTimeout(() => {
+  if(!musicStarted) {
+    muteBtn.style.animation = 'pulse-btn 1s ease infinite';
+    muteBtn.title = 'Tap anywhere to start music';
+  }
+}, 1500);
+
+const style2 = document.createElement('style');
+style2.textContent = `@keyframes pulse-btn { 0%,100%{box-shadow:0 0 0 0 rgba(0,245,255,0.4);} 50%{box-shadow:0 0 0 10px rgba(0,245,255,0);} }`;
+document.head.appendChild(style2);
+
+// ============================================================
+// GLITCH FLICKER (random)
+// ============================================================
+setInterval(() => {
+  if(Math.random() > 0.85) {
+    document.body.style.filter = `hue-rotate(${Math.random()*20}deg) brightness(${0.95 + Math.random()*0.1})`;
+    setTimeout(() => document.body.style.filter = '', 80);
+  }
+}, 2000);
+</script>
 </body>
 </html>
