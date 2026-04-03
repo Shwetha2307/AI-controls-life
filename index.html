@@ -809,7 +809,6 @@ function selectPath(type) {
   currentPath = type;
   const p = paths[type];
   
-  // build scene 5
   const wrapper = document.getElementById('resultWrapper');
   wrapper.style.color = p.color;
   
@@ -828,32 +827,43 @@ function selectPath(type) {
     <div class="result-moral">${p.moral}</div>
   `;
 
-  // morph music
   playPathMusic(type);
 
-  // show scene 5
   const s5 = document.getElementById('s5');
   s5.classList.add('show');
   s5.style.background = `radial-gradient(ellipse at 60% 40%, ${p.color}15 0%, var(--dark) 60%)`;
 
-  // scroll to it
+  // scroll to scene 5 first
   setTimeout(() => {
     s5.scrollIntoView({ behavior: 'smooth' });
   }, 100);
 
-  // animate timeline items
+  // animate timeline ONE BY ONE with scroll
   setTimeout(() => {
     const items = s5.querySelectorAll('.tl-item');
-    items.forEach((item, i) => {
-      setTimeout(() => item.classList.add('visible'), i * 300);
-    });
-  }, 600);
 
-  // then scroll to ending
-  setTimeout(() => {
-    document.getElementById('s6').scrollIntoView({ behavior: 'smooth' });
-    setEnding(type);
-  }, 5000);
+    items.forEach((item, i) => {
+      setTimeout(() => {
+        item.classList.add('visible');
+
+        // scroll slightly to keep focus on new item
+        item.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+
+      }, i * 1400); // slower = better reading experience
+    });
+
+    // AFTER all timeline items → show ending
+    const totalTime = items.length * 1400 + 1500;
+
+    setTimeout(() => {
+      document.getElementById('s6').scrollIntoView({ behavior: 'smooth' });
+      setEnding(type);
+    }, totalTime);
+
+  }, 800);
 }
 
 function setEnding(type) {
